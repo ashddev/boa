@@ -182,7 +182,7 @@ impl CodeBlock {
                 SpannedSourceText::new_empty(),
             ),
             #[cfg(feature = "trace")]
-            debug_id: 0,
+            debug_id: CodeBlock::get_next_codeblock_id(),
         }
     }
 
@@ -333,6 +333,19 @@ impl CodeBlock {
 
     pub(crate) fn source_info(&self) -> &SourceInfo {
         &self.source_info
+    }
+
+    #[cfg(feature = "trace")]
+    pub(crate) fn get_next_codeblock_id() -> u64 {
+        thread_local! {
+            static CODEBLOCK_ID_COUNTER: Cell<u64> = const { Cell::new(0) };
+        }
+
+        CODEBLOCK_ID_COUNTER.with(|c| {
+            let id = c.get();
+            c.set(id + 1);
+            id
+        })
     }
 }
 
